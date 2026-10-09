@@ -3,12 +3,20 @@ services:
     image: ollama/ollama:latest
     container_name: llama_ai
     environment:
-      # ESSENCIAL: Permite que o container do Juice Shop converse com o Ollama
-      - OLLAMA_HOST=0.0.0.0
+      OLLAMA_HOST: "0.0.0.0:11434"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_KEEP_ALIVE: "5m"
     volumes:
       - ollama_data:/root/.ollama
     ports:
-      - "11434:11434"
+      - "127.0.0.1:11434:11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
     networks:
       - juice_net
 
@@ -16,12 +24,14 @@ services:
     image: bkimminich/juice-shop:latest
     container_name: juice-shop
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      - JUICE_SHOP_CHATBOT_LLM_API_URL=http://ollama:11434/v1
-      - JUICE_SHOP_CHATBOT_MODEL=llama3.2:1b
+      NODE_ENV: ollama-local
+    volumes:
+      - ./ollama-local.yml:/juice-shop/config/ollama-local.yml:ro
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
     networks:
       - juice_net
 
