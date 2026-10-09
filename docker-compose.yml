@@ -1,7 +1,10 @@
 services:
   ollama:
     image: ollama/ollama:latest
-    container_name: ollama
+    container_name: llama_ai
+    environment:
+      # ESSENCIAL: Permite que o container do Juice Shop converse com o Ollama
+      - OLLAMA_HOST=0.0.0.0
     volumes:
       - ollama_data:/root/.ollama
     ports:
@@ -15,9 +18,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # URL da API apontando para o container vizinho dentro da rede do Docker
       - JUICE_SHOP_CHATBOT_LLM_API_URL=http://ollama:11434/v1
-      # Modelo ultra enxuto (1.3GB de RAM), ideal para a sua VM
       - JUICE_SHOP_CHATBOT_MODEL=llama3.2:1b
     depends_on:
       - ollama
