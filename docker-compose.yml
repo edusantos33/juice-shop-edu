@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: juice-shop
+    ports:
+      - "3000:3000"
+    environment:
+      # Diz ao Juice Shop para buscar o Ollama usando o nome do serviço na rede Docker
+      - JUICE_SHOP_CHATBOT_LLM_API_URL=http://ollama:11434/v1
+      # Define o modelo leve escolhido por você na imagem
+      - JUICE_SHOP_CHATBOT_MODEL=gemma4:e2b
+    depends_on:
+      - ollama
+
+volumes:
+  ollama_data:
+                
